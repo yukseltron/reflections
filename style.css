@@ -21,7 +21,3 @@ canvas {
 	min-height: 50vmin;
     border: 1px solid white;
 }
-
-canvas:hover {
-    cursor: none;
-}

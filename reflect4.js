@@ -1,21 +1,32 @@
 const width = 500;
 const height = 500;
+const boxSize = 20;
 
 function draw() {
   createCanvas(width, height);
   background(0);
   translate(width / 2, height / 2);
 
-  const x1 = -25;
-  const y1 = 0;
-  const x2 = 20;
-  const y2 = 0;
+  let x1 = mouseX-(width/2);
+  let y1 = mouseY-(height/2);
+  let x2 = 0;
+  let y2 = 0;
 
-  let light = drawLine(mouseX-400, mouseY-400,0,0,'yellow');
+  let light = drawLine(x1, y1, x2, y2, 'yellow');
   fill('red');
-  circle(mouseX-400, mouseY-400, 20);
-  let m1 = drawMirror(x1,y1,x2,y2,light);
+  rect(x1, y1, boxSize, boxSize);
 
+  let m1 = drawMirror(x2-40,y2,x2+40,y2);
+  let n = getNormal(x2-40,y2,x2+40,y2);
+  let r = drawReflection(light.base, m1.base, light.vec, 'orange');
+  let i = drawImage(light.base, n, light.vec);
+
+  let m2 = drawMirror(x2+70,y2-100,x2+70,y2-40);
+  const poi = intersect(r, m2);
+  circle(poi.x, poi.y, 10);
+  if (poi !== false) {
+      let r2 = drawReflection2(r.base, m2.base, poi, 'red');
+  }
 }
 
 function drawLine(x1, y1, x2, y2, color) {
@@ -33,29 +44,84 @@ function drawArrow(base, vec, color) {
     pop();
 }
 
-function drawMirror(x1, y1, x2, y2, {base, vec}) {
+function drawMirror(x1, y1, x2, y2) {
     let v1 = createVector(x1,y1);
     let v2 = createVector(x2,y2);
     drawArrow(v1, v2, 'lightblue');
 
+    return {base: v1, vec: v2};
+}
+
+function getNormal(x1, y1, x2, y2) {
     let dx = x2 - x1;
     let dy = y2 - y1;
     let n1 = createVector(-dy,dx);
     let n2 = createVector(dy,-dx);
-    drawArrow(n1, n2, 'white');
 
-    let angle = base.angleBetween(v1);
-    let v = p5.Vector.fromAngle(angle, windowWidth * 2);
-
-    drawArrow(vec, v, 'orange');
-
-    let image = base.copy();
-    image.reflect(n1);
-    drawArrow(vec, image, 'violet');
-    fill('pink');
-    circle(image.x, image.y, 20);
-
-    return {base: vec, vec: v};
+    return {base: n1, vec: n2};
 }
 
-const y = (m, x, b) => m * x + b;
+function drawReflection(v1, v2, base, color) {
+    let angle = v1.angleBetween(v2);
+    let mag = windowHeight;
+    let r = p5.Vector.fromAngle(angle, mag);
+    drawArrow(base, r, color);
+    return {base: base, vec: r};
+}
+
+function drawReflection2(v1, v2, base, color) {
+    let angle = v1.angleBetween(v2);
+    let mag = windowHeight;
+    let r = p5.Vector.fromAngle(angle, mag);
+    drawArrow(base, r, color);
+    return {base: base, vec: r};
+}
+
+function drawImage(v, n, base) {
+    let image = v.copy();
+    image.reflect(n.base);
+    drawArrow(base, image, 'violet');
+    fill('pink');
+    rect(image.x, image.y, boxSize, -boxSize);
+
+    return {base: base, vec: image};
+}
+
+//https://stackoverflow.com/questions/9043805/test-if-two-lines-intersect-javascript-function
+
+function intersect(v1, v2) {
+    const x1 = v1.base.x;
+    const y1 = v1.base.y;
+    const x2 = v1.vec.x;
+    const y2 = v1.vec.y;
+    const x3 = v2.base.x;
+    const y3 = v2.base.y;
+    const x4 = v2.vec.x;
+    const y4 = v2.vec.y;
+
+  // Check if none of the lines are of length 0
+	if ((x1 === x2 && y1 === y2) || (x3 === x4 && y3 === y4)) {
+		return false
+	}
+
+	denominator = ((y4 - y3) * (x2 - x1) - (x4 - x3) * (y2 - y1))
+
+  // Lines are parallel
+	if (denominator === 0) {
+		return false
+	}
+
+	let ua = ((x4 - x3) * (y1 - y3) - (y4 - y3) * (x1 - x3)) / denominator
+	let ub = ((x2 - x1) * (y1 - y3) - (y2 - y1) * (x1 - x3)) / denominator
+
+  // is the intersection along the segments
+	if (ua < 0 || ua > 1 || ub < 0 || ub > 1) {
+		return false
+	}
+
+  // Return a object with the x and y coordinates of the intersection
+	let x = x1 + ua * (x2 - x1)
+	let y = y1 + ua * (y2 - y1)
+
+	return {x, y}
+}
