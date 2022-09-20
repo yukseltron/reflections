@@ -45,7 +45,8 @@ function drawMirror(x1, y1, x2, y2, {base, vec}) {
     drawArrow(n1, n2, 'white');
 
     let angle = base.angleBetween(v1);
-    let v = p5.Vector.fromAngle(angle, base.mag());
+    let v = p5.Vector.fromAngle(angle, windowWidth * 2);
+
     drawArrow(vec, v, 'orange');
 
     let image = base.copy();
@@ -56,3 +57,5 @@ function drawMirror(x1, y1, x2, y2, {base, vec}) {
 
     return {base: vec, vec: v};
 }
+
+const y = (m, x, b) => m * x + b;
