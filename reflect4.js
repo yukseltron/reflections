@@ -9,8 +9,8 @@ function draw() {
 
   let x1 = mouseX-(width/2);
   let y1 = mouseY-(height/2);
-  let x2 = 0;
-  let y2 = 0;
+  let x2 = 1;
+  let y2 = 1;
 
   let light = drawLine(x1, y1, x2, y2, 'yellow');
   fill('red');
@@ -23,9 +23,12 @@ function draw() {
 
   let m2 = drawMirror(x2+70,y2-100,x2+70,y2-40);
   const poi = intersect(r, m2);
-  circle(poi.x, poi.y, 10);
+
   if (poi !== false) {
-      let r2 = drawReflection2(r.base, m2.base, poi, 'red');
+      let p = createVector(poi.x, poi.y);
+      //r.vec = p;reset background to redraw it.
+
+      let r2 = drawReflection(r.base, m2.base, p, 'red');
   }
 }
 
@@ -66,14 +69,7 @@ function drawReflection(v1, v2, base, color) {
     let mag = windowHeight;
     let r = p5.Vector.fromAngle(angle, mag);
     drawArrow(base, r, color);
-    return {base: base, vec: r};
-}
 
-function drawReflection2(v1, v2, base, color) {
-    let angle = v1.angleBetween(v2);
-    let mag = windowHeight;
-    let r = p5.Vector.fromAngle(angle, mag);
-    drawArrow(base, r, color);
     return {base: base, vec: r};
 }
 
@@ -87,8 +83,8 @@ function drawImage(v, n, base) {
     return {base: base, vec: image};
 }
 
-//https://stackoverflow.com/questions/9043805/test-if-two-lines-intersect-javascript-function
 
+//http://paulbourke.net/geometry/pointlineplane/javascript.txt
 function intersect(v1, v2) {
     const x1 = v1.base.x;
     const y1 = v1.base.y;
