@@ -11,11 +11,10 @@ function draw() {
   const x2 = 20;
   const y2 = 0;
 
-  let light = drawLine(mouseX-400, mouseY-400,0,0,'#ffffff');
-  let m1 = drawMirror(x1,y1,x2,y2,light,'red');
-  let {base, vec} = m1;
-  let l2 = drawLine(base.x,base.y,vec.x,vec.y,'#ffffff');
-  let m2 = drawMirror(40, -50, 100, -50,l2,'red');
+  let light = drawLine(mouseX-400, mouseY-400,0,0,'yellow');
+  fill('red');
+  circle(mouseX-400, mouseY-400, 20);
+  let m1 = drawMirror(x1,y1,x2,y2,light);
 
 }
 
@@ -34,22 +33,26 @@ function drawArrow(base, vec, color) {
     pop();
 }
 
-function drawMirror(x1, y1, x2, y2, {base, vec}, color) {
+function drawMirror(x1, y1, x2, y2, {base, vec}) {
     let v1 = createVector(x1,y1);
     let v2 = createVector(x2,y2);
+    drawArrow(v1, v2, 'lightblue');
 
     let dx = x2 - x1;
     let dy = y2 - y1;
-
     let n1 = createVector(-dy,dx);
     let n2 = createVector(dy,-dx);
+    drawArrow(n1, n2, 'white');
+
     let angle = base.angleBetween(v1);
     let v = p5.Vector.fromAngle(angle, base.mag());
-    //print(degrees(angle));
-
-    drawArrow(v1, v2, color);
-    drawArrow(n1, n2, 'green');
     drawArrow(vec, v, 'orange');
+
+    let image = base.copy();
+    image.reflect(n1);
+    drawArrow(vec, image, 'violet');
+    fill('pink');
+    circle(image.x, image.y, 20);
 
     return {base: vec, vec: v};
 }

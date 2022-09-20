@@ -1,0 +1,27 @@
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+	width: 50%;
+	margin: auto;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+	font-family: sans-serif;
+}
+body * {
+	margin-top: 2vmin;
+	margin-bottom: 2vmin;
+}
+canvas {
+	min-height: 50vmin;
+    border: 1px solid white;
+}
+
+canvas:hover {
+    cursor: none;
+}
