@@ -1,7 +1,6 @@
 const width = 500;
 const height = 500;
 const boxSize = 20;
-var mg = height * 10;
 
 function draw() {
   createCanvas(width, height);
@@ -19,7 +18,7 @@ function draw() {
 
   let m1 = drawMirror(x2-40,y2,x2+40,y2);
   let n = getNormal(x2-40,y2,x2+40,y2);
-  let r = drawReflection2(light, m1, 'orange', windowHeight);
+  let r = drawReflection(light, m1, 'orange', windowHeight);
   let i = drawImage(light.base, n, light.vec);
 
   let m2 = drawMirror(x2+70,y2-100,x2+70,y2-40);
@@ -28,13 +27,10 @@ function draw() {
   if (poi !== false) {
       let p = createVector(poi.x, poi.y);
       strokeWeight(1.5);
-      r = drawReflection2(light, m1, 'black', windowHeight);
+      r = drawReflection(light, m1, 'black', windowHeight);
       strokeWeight(1);
-      r = drawReflection2(light, m1, 'orange', p.mag());
-      //r.vec = p;reset background to redraw it.
-      let r2 = drawReflection2(r, m2, 'red', p.mag());
-  } else {
-      mg = windowHeight;
+      r = drawReflection(light, m1, 'orange', p.mag());
+      let r2 = drawReflection2(r, m2, 'orange', windowHeight);
   }
 }
 
@@ -70,6 +66,26 @@ function getNormal(x1, y1, x2, y2) {
     return {base: n1, vec: n2};
 }
 
+function drawReflection(light, mirror, color, size) {
+    let angle = light.base.angleBetween(mirror.base);
+    let r = p5.Vector.fromAngle(angle, size);
+    drawArrow(light.vec, r, color);
+
+    return {base: light.vec, vec: r};
+}
+
+function drawReflection2(light, mirror, color, size) {
+    let n = getNormal(mirror.vec.x, mirror.vec.y, mirror.base.x, mirror.base.y);
+    let angle = getAngle(light.vec, n.base);
+    let r = p5.Vector.fromAngle(angle, size);
+    r.reflect(n.base);
+    drawArrow(light.vec, r, color);
+
+    return {base: light.vec, vec: r};
+}
+
+
+/*
 function drawReflection(v1, v2, base, color) {
     let angle = v1.angleBetween(v2);
     let mag = windowHeight;
@@ -78,21 +94,16 @@ function drawReflection(v1, v2, base, color) {
 
     return {base: base, vec: r};
 }
+*/
 
-function drawReflection2(light, mirror, color, size) {
-    let angle = light.base.angleBetween(mirror.base);
-    let r = p5.Vector.fromAngle(angle, size);
-    drawArrow(light.vec, r, color);
-
-    return {base: light.vec, vec: r};
-}
-
+/*
 function drawReflection3(v1, v2, base, color) {
     let r = v1.copy();
     r.reflect(v2);
     drawArrow(base, r, color);
     return {base: base, vec: r};
 }
+*/
 
 function drawImage(v, n, base) {
     let image = v.copy();
@@ -102,6 +113,14 @@ function drawImage(v, n, base) {
     rect(image.x, image.y, boxSize, -boxSize);
 
     return {base: base, vec: image};
+}
+
+function getAngle(v1, v2) {
+    let firstAngle = Math.atan2(v1.x, v1.y);
+    let secondAngle = Math.atan2(v2.x, v2.y);
+    let angle = secondAngle - firstAngle;
+
+    return angle;
 }
 
 
