@@ -7,54 +7,98 @@ function draw() {
   background(0);
   translate(width / 2, height / 2);
 
-  let x1 = mouseX-(width/2);
-  let y1 = mouseY-(height/2);
-  let x2 = 0;
-  let y2 = 0;
+  const x1 = mouseX > 0 && mouseX < (width/2) ? mouseX-(width/2) : 0;
+  const y1 = mouseY > 0 && mouseY < (height/2) ? mouseY-(height/2) : 0;
+  const x2 = 0;
+  const y2 = 0;
 
-  let light = drawLine(x1, y1, x2, y2, 'yellow');
+  let incident = drawRay(x1, y1, x2, y2, 'yellow');
   fill('red');
   rect(x1, y1, boxSize, boxSize);
 
   let m1 = drawMirror(x2-40,y2,x2+40,y2);
-  let n = getNormal(x2-40,y2,x2+40,y2);
-  let r = drawReflection(light, m1, 'orange', windowHeight);
-  let i = drawImage(light.base, n, light.vec);
+  //let m1 = drawMirror(x2,y2+40,x2,y2-40);
+  const angle = degrees(getAngle(incident.start, m1.start));
+  let r = drawReflection(incident, m1, 'orange', windowHeight, -angle);
+  let i = drawImage(incident, m1);
 
+  //let m2 = drawMirror(x2+80,y2-100,x2+120,y2-100);
   let m2 = drawMirror(x2+70,y2-100,x2+70,y2-40);
-  const poi = intersect(r, m2);
 
+  const poi = intersect(r, m2);
   if (poi !== false) {
       let p = createVector(poi.x, poi.y);
       strokeWeight(1.5);
-      r = drawReflection(light, m1, 'black', windowHeight);
+      r = drawReflection(incident, m1, 'black', windowHeight, -angle);
       strokeWeight(1);
-      r = drawReflection(light, m1, 'orange', p.mag());
-      let r2 = drawReflection2(r, m2, 'orange', windowHeight);
+      r = drawReflection(incident, m1, 'orange', p.mag(), -angle);
+
+      //let r2 = drawReflection2({ start: p, end: r.end}, m2, 'orange', windowHeight, r.angle);
+      //let r3 = drawReflection2({ start: p, end: p}, m2, 'orange', windowHeight, -r.angle);
+      //angle = degrees(getAngle(r.start, m2.start));
+      r = drawReflection(r, m2, 'orange', windowHeight, -r.angle - 10);
   }
 }
 
-function drawLine(x1, y1, x2, y2, color) {
+function drawRay(x1, y1, x2, y2, color) {
     let v1 = createVector(x1,y1);
     let v2 = createVector(x2,y2);
-    drawArrow(v1, v2, color);
+    drawLine(v1, v2, color);
 
-    return {base: v1, vec: v2};
+    return {start: v1, end: v2};
 }
 
-function drawArrow(base, vec, color) {
+function drawLine(start, end, color) {
     push();
     stroke(color);
-    line(base.x, base.y, vec.x, vec.y)
+    line(start.x, start.y, end.x, end.y)
     pop();
 }
 
 function drawMirror(x1, y1, x2, y2) {
     let v1 = createVector(x1,y1);
     let v2 = createVector(x2,y2);
-    drawArrow(v1, v2, 'lightblue');
+    drawLine(v1, v2, 'lightblue');
+    let n = getNormal(x1, y1, x2, y2);
 
-    return {base: v1, vec: v2};
+    return {start: v1, end: v2, normal: n};
+}
+
+function drawViewer(x, y, w, l, color) {
+    let v1 = createVector(x+w,y);
+    let v2 = createVector(x,y+l);
+    fill(color);
+    rect(x, y, w, l);
+
+    return {start: v1, end: v2};
+}
+
+function drawReflection(light, mirror, color, size, angle) {
+    let r = p5.Vector.fromAngle(radians(angle), size);
+    r.reflect(mirror.normal.start);
+    drawLine(light.end, r, color);
+
+    return {start: light.end, end: r, angle: angle};
+}
+
+function drawImage(light, mirror) {
+    let image = light.start.copy();
+    image.reflect(mirror.normal.end);
+    drawLine(light.end, image, 'violet');
+    fill('pink');
+    rect(image.x, image.y, boxSize, -boxSize);
+
+    return {start: light.end, end: image};
+}
+
+function getAngle(v1, v2) {
+    let firstAngle = Math.atan2(v1.x, v1.y);
+    let secondAngle = Math.atan2(v2.x, v2.y);
+    const points = [v1.x, v1.y, v2.x, v2.y]
+    let angle = secondAngle - firstAngle;
+
+    const len = points.filter(value => value < 0);
+    return len.length % 2 === 0 ? angle : -angle;
 }
 
 function getNormal(x1, y1, x2, y2) {
@@ -63,77 +107,20 @@ function getNormal(x1, y1, x2, y2) {
     let n1 = createVector(-dy,dx);
     let n2 = createVector(dy,-dx);
 
-    return {base: n1, vec: n2};
-}
-
-function drawReflection(light, mirror, color, size) {
-    let angle = light.base.angleBetween(mirror.base);
-    let r = p5.Vector.fromAngle(angle, size);
-    drawArrow(light.vec, r, color);
-
-    return {base: light.vec, vec: r};
-}
-
-function drawReflection2(light, mirror, color, size) {
-    let n = getNormal(mirror.vec.x, mirror.vec.y, mirror.base.x, mirror.base.y);
-    let angle = getAngle(light.vec, n.base);
-    let r = p5.Vector.fromAngle(angle, size);
-    r.reflect(n.base.normalize());
-    drawArrow(light.vec, r, color);
-
-    return {base: light.vec, vec: r};
-}
-
-
-/*
-function drawReflection(v1, v2, base, color) {
-    let angle = v1.angleBetween(v2);
-    let mag = windowHeight;
-    let r = p5.Vector.fromAngle(angle, mag);
-    drawArrow(base, r, color);
-
-    return {base: base, vec: r};
-}
-*/
-
-/*
-function drawReflection3(v1, v2, base, color) {
-    let r = v1.copy();
-    r.reflect(v2);
-    drawArrow(base, r, color);
-    return {base: base, vec: r};
-}
-*/
-
-function drawImage(v, n, base) {
-    let image = v.copy();
-    image.reflect(n.base);
-    drawArrow(base, image, 'violet');
-    fill('pink');
-    rect(image.x, image.y, boxSize, -boxSize);
-
-    return {base: base, vec: image};
-}
-
-function getAngle(v1, v2) {
-    let firstAngle = Math.atan2(v1.x, v1.y);
-    let secondAngle = Math.atan2(v2.x, v2.y);
-    let angle = secondAngle - firstAngle;
-
-    return angle;
+    return {start: n1, end: n2};
 }
 
 
 //http://paulbourke.net/geometry/pointlineplane/javascript.txt
 function intersect(v1, v2) {
-    const x1 = v1.base.x;
-    const y1 = v1.base.y;
-    const x2 = v1.vec.x;
-    const y2 = v1.vec.y;
-    const x3 = v2.base.x;
-    const y3 = v2.base.y;
-    const x4 = v2.vec.x;
-    const y4 = v2.vec.y;
+    const x1 = v1.start.x;
+    const y1 = v1.start.y;
+    const x2 = v1.end.x;
+    const y2 = v1.end.y;
+    const x3 = v2.start.x;
+    const y3 = v2.start.y;
+    const x4 = v2.end.x;
+    const y4 = v2.end.y;
 
   // Check if none of the lines are of length 0
 	if ((x1 === x2 && y1 === y2) || (x3 === x4 && y3 === y4)) {
