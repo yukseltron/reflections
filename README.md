@@ -3,9 +3,7 @@
 [See the site](https://reflections-brilliant.vercel.app/)
 
 
-## Documentation
-This is for the ```reflect.js``` file, which contains the shared code for all examples. 
-
+## Documentation (reflect.js)
 
 ```js
 // Num -> Num -> Num -> Num -> String -> {Vector, Vector}
