@@ -1,42 +1,68 @@
 const width = 500;
 const height = 500;
+const halfWidth = width/2;
+const halfHeight = height/2;
+const centerX = 0;
+const centerY = 0;
 const boxSize = 20;
+const offset = -10;
 
 function draw() {
-  createCanvas(width, height);
-  background(0);
-  translate(width / 2, height / 2);
+    rectMode(CENTER);
+    createCanvas(width, height);
+    background(0);
+    translate(halfWidth, halfHeight);
 
-  const x1 = mouseX-(width/2);
-  const y1 = mouseY-(height/2);
-  const x2 = 0;
-  const y2 = 0;
+    let viewer
+        = drawViewer
+        ( centerX-60
+        , centerY-200
+        , boxSize
+        , boxSize
+        , 'white'
+        );
 
-  let viewer = drawViewer(-60,-200,20,20, 'white');
-  let incident = drawRay(x1, y1, x2, y2, 'yellow');
-  fill('red');
-  rect(x1, y1, boxSize, boxSize);
+    let incident
+        = drawRay
+        ( mouseX-halfWidth
+        , mouseY-halfHeight
+        , centerX
+        , centerY
+        , 'yellow'
+        );
+    fill('red');
+    rect(mouseX-halfWidth, mouseY-halfHeight, boxSize, boxSize);
 
-  let m1 = drawMirror(x2-40,y2,x2+40,y2);
-  const angle = degrees(getAngle(incident.start, m1.start));
-  let r = drawReflection(incident, m1, 'orange', windowHeight);
-  let i = drawImage(incident, m1);
-  let m2 = drawMirror(x2+70,y2-100,x2+70,y2-40);
+    let m1
+        = drawMirror
+        (centerX-40
+        , centerY
+        , centerX+40
+        , centerY
+        );
 
-  const poi = intersect(r, m2);
-  if (poi !== false) {
-      let p = createVector(poi.x, poi.y);
-      strokeWeight(1.5);
-      r = drawReflection(incident, m1, 'black', windowHeight);
-      strokeWeight(1);
-      r = drawReflection(incident, m1, 'orange', p.mag());
-      r = drawReflectionCustom(r, m2, 'orange', windowHeight);
-  }
+    let m2
+        = drawMirror
+        ( centerX+70
+        , centerY-100
+        , centerX+70
+        , centerY-40
+        );
 
-  const poi2 = intersect(r, viewer);
-  if (poi2 !== false) {
-    viewer = drawViewer(-60,-200,20,20, 'green');
-  }
+    const angle = degrees(getAngle(incident.start, m1.start));
+    let r = drawReflection(incident, m1, 'orange', windowHeight);
+    let i = drawImage(incident, m1);
+
+    const poi = intersect(r, m2);
+    if (poi !== false) {
+        r = undrawRay(incident, m1, poi);
+        r = drawReflectionCustom(r, m2, 'orange', windowHeight);
+    }
+
+    const poi2 = intersect(r, viewer);
+    if (poi2 !== false) {
+        viewer = drawViewer(-60,-200,20,20, 'green');
+    }
 }
 
 function drawRay(x1, y1, x2, y2, color) {
@@ -45,6 +71,16 @@ function drawRay(x1, y1, x2, y2, color) {
     drawLine(v1, v2, color);
 
     return {start: v1, end: v2};
+}
+
+function undrawRay(light, mirror, poi) {
+    let p = createVector(poi.x, poi.y);
+    strokeWeight(1.5);
+    r = drawReflection(light, mirror, 'black', windowHeight);
+    strokeWeight(1);
+    r = drawReflection(light, mirror, 'orange', p.mag());
+
+    return {start: light.start, end: p};
 }
 
 function drawLine(start, end, color) {
@@ -82,23 +118,23 @@ function drawReflection(light, mirror, color, size) {
 
 function drawReflectionCustom(light, mirror, color, size) {
     let angle = degrees(getAngle(light.end, mirror.normal.start));
-    let r = p5.Vector.fromAngle(-radians(angle-10), size);
+    let r = p5.Vector.fromAngle(-radians(angle+offset), size);
     drawLine(light.end, r, color);
 
     return {start: light.end, end: r, angle: angle};
 }
-
 
 function drawImage(light, mirror) {
     let image = light.start.copy();
     image.reflect(mirror.normal.end);
     drawLine(light.end, image, 'violet');
     fill('pink');
-    rect(image.x, image.y, boxSize, -boxSize);
+    rect(image.x, image.y, boxSize, boxSize);
 
     return {start: light.end, end: image};
 }
 
+//modified from: https://stackoverflow.com/questions/56147279/how-to-find-angle-between-two-vectors-on-canvas
 function getAngle(v1, v2) {
     let firstAngle = Math.atan2(v1.x, v1.y);
     let secondAngle = Math.atan2(v2.x, v2.y);
@@ -109,6 +145,7 @@ function getAngle(v1, v2) {
     return len.length % 2 === 0 ? angle : -angle;
 }
 
+//modified from: https://stackoverflow.com/a/1243676/6137476
 function getNormal(x1, y1, x2, y2) {
     let dx = x2 - x1;
     let dy = y2 - y1;
@@ -118,7 +155,7 @@ function getNormal(x1, y1, x2, y2) {
     return {start: n1, end: n2};
 }
 
-//http://paulbourke.net/geometry/pointlineplane/javascript.txt
+//modified from: http://paulbourke.net/geometry/pointlineplane/javascript.txt
 function intersect(v1, v2) {
     const x1 = v1.start.x;
     const y1 = v1.start.y;

@@ -1,37 +1,46 @@
 const width = 500;
 const height = 500;
+const halfWidth = width/2;
+const halfHeight = height/2;
+const centerX = 0;
+const centerY = 0;
 const boxSize = 20;
-const offset = 10
+const offset = -10;
 
 function draw() {
-  createCanvas(width, height);
-  background(0);
-  translate(width / 2, height / 2);
+    createCanvas(width, height);
+    background(0);
+    translate(halfWidth, halfHeight);
 
-  const x1 = mouseX-(width/2);
-  const y1 = mouseY-(height/2);
-  const x2 = 0;
-  const y2 = 0;
+    const x1 = mouseX-(width/2);
+    const y1 = mouseY-(height/2);
+    const x2 = 0;
+    const y2 = 0;
 
-  let viewer = drawViewer(100,-200,20,20, 'white');
-  let viewer2 = drawViewer(80,-100,20,20, 'white');
-  let incident = drawRay(x1, y1, x2, y2, 'yellow');
-  fill('red');
-  rect(x1, y1, boxSize, boxSize);
+    const incident
+        = drawRay
+        ( mouseX-halfWidth
+        , mouseY-halfHeight
+        , centerX
+        , centerY
+        , 'yellow'
+        );
+    fill('red');
+    rect(mouseX-halfWidth, mouseY-halfHeight, boxSize, boxSize);
 
-  let m1 = drawMirror(x2-40,y2,x2+40,y2);
-  const angle = degrees(getAngle(incident.start, m1.start));
-  let r = drawReflection(incident, m1, 'orange', windowHeight, -angle);
-  let i = drawImage(incident, m1);
+    const m1 = drawMirror(x2-40,y2,x2+40,y2);
+    let r = drawReflection(incident, m1, 'orange', windowHeight);
+    const i = drawImage(incident, m1);
 
-  const poi1 = intersect(r, viewer);
-  if (poi1 !== false) {
-    viewer = drawViewer(100,-200,20,20, 'green');
-  }
-  const poi2 = intersect(r, viewer2);
-  if (poi2 !== false) {
-    viewer2 = drawViewer(80,-100,20,20, 'green');
-  }
+    const viewer
+        = intersect(r, drawViewer(100,-200,20,20, 'white'))
+        ? drawViewer(100,-200,20,20, 'white')
+        : drawViewer(100,-200,20,20, 'green');
+
+    const viewer2
+        = intersect(r, drawViewer(80,-100,20,20, 'white'))
+        ? drawViewer(80,-100,20,20, 'white')
+        : drawViewer(80,-100,20,20, 'green');
 }
 
 function drawRay(x1, y1, x2, y2, color) {
@@ -78,7 +87,7 @@ function drawReflection(light, mirror, color, size) {
 
 function drawReflectionCustom(light, mirror, color, size) {
     let angle = degrees(getAngle(light.end, mirror.normal.start));
-    let r = p5.Vector.fromAngle(-radians(angle-offset), size);
+    let r = p5.Vector.fromAngle(-radians(angle+offset), size);
     drawLine(light.end, r, color);
 
     return {start: light.end, end: r, angle: angle};
@@ -95,6 +104,7 @@ function drawImage(light, mirror) {
     return {start: light.end, end: image};
 }
 
+//modified from: https://stackoverflow.com/questions/56147279/how-to-find-angle-between-two-vectors-on-canvas
 function getAngle(v1, v2) {
     let firstAngle = Math.atan2(v1.x, v1.y);
     let secondAngle = Math.atan2(v2.x, v2.y);
@@ -105,6 +115,7 @@ function getAngle(v1, v2) {
     return len.length % 2 === 0 ? angle : -angle;
 }
 
+//modified from: https://stackoverflow.com/a/1243676/6137476
 function getNormal(x1, y1, x2, y2) {
     let dx = x2 - x1;
     let dy = y2 - y1;

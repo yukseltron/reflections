@@ -1,12 +1,12 @@
 function draw() {
-  createCanvas(500, 500);
+  createCanvas(windowWidth/2, 500);
   background(0);
-
+  translate(0,250);
   let v0 = createVector(0,0);
   let v1 = createVector(mouseX, mouseY);
   drawArrow(v0, v1, 'orange');
   fill('green');
-  rect(0,0,100,20);
+  rect(0,0,20,20);
 
   let n = createVector(0, 1);
   drawMirror(v1, n);
@@ -14,14 +14,14 @@ function draw() {
   let r = v1.copy();
   let n2 = createVector(1, 0);
   r.reflect(n2);
-  rect(r.x,r.y,100,20);
-  drawArrow(v1, r, 'red');
+  rect(r.x,r.y,20,20);
+  drawArrow(v1, r, 'purple');
   print(r);
 
   let angleBetween = v1.angleBetween(n);
   let rad = radians(-(90-degrees(angleBetween)));
   let v2 = p5.Vector.fromAngle(rad, v1.mag());
-  drawArrow(v1, v2, 'purple');
+  drawArrow(v1, v2, 'yellow');
   if (intersectLineCircle(v1,v2,{x: 600, y:60},20)) {
        fill(250);
   } else {

@@ -53,7 +53,7 @@ function draw() {
   );
 }
 
-// draw an arrow for a vector at a given base position
+
 function drawArrow(base, vec, myColor) {
   push();
   stroke(myColor);
