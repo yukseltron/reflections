@@ -1,15 +1,15 @@
 const width = 500;
 const height = 500;
 const boxSize = 20;
+const offset = 10
 
 function draw() {
   createCanvas(width, height);
   background(0);
   translate(width / 2, height / 2);
 
-  print(mouseX, mouseY);
-  const x1 = mouseX > 0 && mouseX < (width/2) ? mouseX-(width/2) : 0;
-  const y1 = mouseY > 0 && mouseY < (height/2) ? mouseY-(height/2) : 0;
+  const x1 = mouseX-(width/2);
+  const y1 = mouseY-(height/2);
   const x2 = 0;
   const y2 = 0;
 
@@ -19,7 +19,8 @@ function draw() {
 
   let m1 = drawMirror(x2-40,y2,x2+40,y2);
   const angle = degrees(getAngle(incident.start, m1.start));
-  let r = drawReflection(incident, m1, 'orange', windowHeight, -angle);
+  let r = drawReflection(incident, m1, 'orange', windowHeight);
+
 }
 
 function drawRay(x1, y1, x2, y2, color) {
@@ -55,13 +56,22 @@ function drawViewer(x, y, w, l, color) {
     return {start: v1, end: v2};
 }
 
-function drawReflection(light, mirror, color, size, angle) {
-    let r = p5.Vector.fromAngle(radians(angle), size);
-    r.reflect(mirror.normal.start);
+function drawReflection(light, mirror, color, size) {
+    let angle = light.start.angleBetween(mirror.start);
+    let r = p5.Vector.fromAngle(angle, size);
     drawLine(light.end, r, color);
 
     return {start: light.end, end: r, angle: angle};
 }
+
+function drawReflectionCustom(light, mirror, color, size) {
+    let angle = degrees(getAngle(light.end, mirror.normal.start));
+    let r = p5.Vector.fromAngle(-radians(angle-offset), size);
+    drawLine(light.end, r, color);
+
+    return {start: light.end, end: r, angle: angle};
+}
+
 
 function drawImage(light, mirror) {
     let image = light.start.copy();
@@ -91,7 +101,6 @@ function getNormal(x1, y1, x2, y2) {
 
     return {start: n1, end: n2};
 }
-
 
 //http://paulbourke.net/geometry/pointlineplane/javascript.txt
 function intersect(v1, v2) {

@@ -18,26 +18,19 @@ function draw() {
   rect(x1, y1, boxSize, boxSize);
 
   let m1 = drawMirror(x2-40,y2,x2+40,y2);
-  //let m1 = drawMirror(x2,y2+40,x2,y2-40);
   const angle = degrees(getAngle(incident.start, m1.start));
-  let r = drawReflection(incident, m1, 'orange', windowHeight, -angle);
+  let r = drawReflection(incident, m1, 'orange', windowHeight);
   let i = drawImage(incident, m1);
-
-  //let m2 = drawMirror(x2+80,y2-100,x2+120,y2-100);
   let m2 = drawMirror(x2+70,y2-100,x2+70,y2-40);
 
   const poi = intersect(r, m2);
   if (poi !== false) {
       let p = createVector(poi.x, poi.y);
       strokeWeight(1.5);
-      r = drawReflection(incident, m1, 'black', windowHeight, -angle);
+      r = drawReflection(incident, m1, 'black', windowHeight);
       strokeWeight(1);
-      r = drawReflection(incident, m1, 'orange', p.mag(), -angle);
-
-      //let r2 = drawReflection2({ start: p, end: r.end}, m2, 'orange', windowHeight, r.angle);
-      //let r3 = drawReflection2({ start: p, end: p}, m2, 'orange', windowHeight, -r.angle);
-      //angle = degrees(getAngle(r.start, m2.start));
-      r = drawReflection(r, m2, 'orange', windowHeight, -r.angle - 10);
+      r = drawReflection(incident, m1, 'orange', p.mag());
+      r = drawReflectionCustom(r, m2, 'orange', windowHeight);
   }
 
   const poi2 = intersect(r, viewer);
@@ -79,13 +72,22 @@ function drawViewer(x, y, w, l, color) {
     return {start: v1, end: v2};
 }
 
-function drawReflection(light, mirror, color, size, angle) {
-    let r = p5.Vector.fromAngle(radians(angle), size);
-    r.reflect(mirror.normal.start);
+function drawReflection(light, mirror, color, size) {
+    let angle = light.start.angleBetween(mirror.start);
+    let r = p5.Vector.fromAngle(angle, size);
     drawLine(light.end, r, color);
 
     return {start: light.end, end: r, angle: angle};
 }
+
+function drawReflectionCustom(light, mirror, color, size) {
+    let angle = degrees(getAngle(light.end, mirror.normal.start));
+    let r = p5.Vector.fromAngle(-radians(angle-10), size);
+    drawLine(light.end, r, color);
+
+    return {start: light.end, end: r, angle: angle};
+}
+
 
 function drawImage(light, mirror) {
     let image = light.start.copy();
@@ -115,7 +117,6 @@ function getNormal(x1, y1, x2, y2) {
 
     return {start: n1, end: n2};
 }
-
 
 //http://paulbourke.net/geometry/pointlineplane/javascript.txt
 function intersect(v1, v2) {

@@ -11,7 +11,8 @@ body {
     flex-direction: column;
     justify-content: center;
     align-items: center;
-	font-family: sans-serif;
+	font-family: monospace;
+    font-size: 1.15em;
 }
 
 body * {
@@ -22,6 +23,9 @@ body * {
 canvas {
 	min-height: 50vmin;
     border: 1px solid white;
+}
+canvas:hover {
+    cursor: none;
 }
 
 ol {
