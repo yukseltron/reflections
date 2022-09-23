@@ -28,6 +28,6 @@ canvas:hover {
     cursor: none;
 }
 
-ol {
+ol, ul {
     list-style-position: inside;
 }
